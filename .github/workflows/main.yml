@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: CI
+name: U-Boot build
 
 # Controls when the workflow will run
 on:
@@ -23,5 +23,21 @@ jobs:
         run: |
           cd "1.UBoot"
           wget https://downloads.wdc.com/gpl/WDMyCloud_Ex2Ultra_GPL_v2.31.204_20191206.tar.gz
-          tar -xvzf WDMyCloud_Ex2Ultra_GPL_v2.31.204_20191206.tar.gz
-          ls -lahR .
+          tar -xzf WDMyCloud_Ex2Ultra_GPL_v2.31.204_20191206.tar.gz
+          mv WDMyCloud_Ex2Ultra_GPL_v2.31.204_20191206/u-boot ./
+          mv WDMyCloud_Ex2Ultra_GPL_v2.31.204_20191206/toolchain ./
+          rm -rf mv WDMyCloud_Ex2Ultra_GPL_v2.31.204_20191206
+          cd toolchain
+          tar -xzf armv7-marvell-linux-gnueabi-softfp_i686_64K_Dev_20131002.tar.gz
+          cd ../u-boot
+          tar -xzf u-boot-2013.01-2014_T3.0p2.tar.gz
+          sed -i -e 2,4d u-boot-2013.01-2014_T3.0p2/xbuild.sh
+          cd ../toolchain/armv7-marvell-linux-gnueabi-softfp_i686_64K_Dev_20131002/bin
+          pewd=$PWD
+          cd -
+          sed -i "2 a export PATH=\$PATH:$pewd" u-boot-2013.01-2014_T3.0p2/xbuild.sh
+          cp ../GrandTeton-20170708.patch u-boot-2013.01-2014_T3.0p2
+          cd u-boot-2013.01-2014_T3.0p2
+          patch -p1 < GrandTeton-20170708.patch
+          sudo apt install gcc-multilib
+          sudo ./xbuid.sh build
